@@ -7,10 +7,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 db = SQLAlchemy(app)
 
 
-class Todo(db.Model):
+class TodoDataBaseModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.String(200), nullable=False)
-    compelted = db.Column(db.Integer, default=0)
+    content = db.Column(db.String(100), nullable=False)
+    status = db.Column(db.String, default='In progress')
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
@@ -21,35 +21,35 @@ class Todo(db.Model):
 def index():
     if request.method == 'POST':
         task_content = request.form['content']
-        new_task = Todo(content=task_content)
+        new_task = TodoDataBaseModel(content=task_content)
 
         try:
             db.session.add(new_task)
             db.session.commit()
             return redirect('/')
         except:
-            return "There was a problem with your request!"
+            return 'An error occurred :('
 
     else:
-        tasks = Todo.query.order_by(Todo.date_created).all()
+        tasks = TodoDataBaseModel.query.order_by(TodoDataBaseModel.id).all()
         return render_template("index.html", tasks=tasks)
 
 
 @app.route('/delete/<int:id>')
 def delete(id):
-    task_to_delete = Todo.query.get_or_404(id)
+    task_to_delete = TodoDataBaseModel.query.get_or_404(id)
 
     try:
         db.session.delete(task_to_delete)
         db.session.commit()
         return redirect('/')
     except:
-        return 'There was a problem deleting your task!'
+        return 'An error occurred :('
 
 
-@app.route('/update/<int:id>', methods=['GET', 'POST'])
+@app.route('/update/<int:id>', methods=['POST', 'GET'])
 def update(id):
-    task_to_update = Todo.query.get_or_404(id)
+    task_to_update = TodoDataBaseModel.query.get_or_404(id)
 
     if request.method == 'POST':
         task_to_update.content = request.form['content']
@@ -58,7 +58,8 @@ def update(id):
             db.session.commit()
             return redirect('/')
         except:
-            return 'There was a problem updating your task!'
+            return 'An error occurred, when updating the task :('
+
     else:
         return render_template('update.html', task=task_to_update)
 
