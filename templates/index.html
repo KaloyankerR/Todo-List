@@ -4,27 +4,39 @@
     <title>Todo List</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 
 {% endblock %}
 
 {% block body %}
     <section class="vh-100">
         <div class="container py-5 h-100">
+
+            {% if alert %}
+                <div class="emptyTextWarning">
+                    <span class="closeButton">&times;</span>
+                    <strong>!</strong> Please fill out the field below
+                </div>
+
+            {% endif %}
+
             <div class="row d-flex justify-content-center align-items-center h-100">
                 <div class="col col-lg-9 col-xl-7">
                     <div class="card rounded-3">
                         <div class="card-body p-4">
                             <h4 class="text-center my-3 pb-3">To Do List</h4>
 
-                            <form class="row row-cols-lg-auto g-3 justify-content-center align-items-center mb-4 pb-2 task-form"
+                            <form name="taskForm"
+                                  class="row row-cols-lg-auto g-3 justify-content-center align-items-center mb-4 pb-2 task-form"
                                   action="/" method="POST">
                                 <div class="col-12">
                                     <div class="form-outline">
-                                        <input type="text" id="content" name="content" class="form-control"/>
-                                        <label class="form-label" for="content">Enter a task here</label>
+                                        <input type="text" id="content" name="content" class="form-control"
+                                               onsubmit="" placeholder="Enter a task here"/>
+                                        <label class="form-label" for="content"></label>
 
                                         <div class="col-12 text-right">
-                                            <button type="submit" class="btn btn-primary">Save</button>
+                                            <button type="submit" class="btn btn-primary">Add</button>
                                         </div>
 
                                     </div>
@@ -36,19 +48,19 @@
                             <table class="table mb-4">
                                 <thead>
                                 <tr>
-                                    <th scope="col">No.</th>
-                                    <th scope="col">Todo item</th>
-                                    <th scope="col">Status</th>
-                                    <th scope="col">Actions</th>
+                                    <th scope="col" colspan="1">No.</th>
+                                    <th scope="col" colspan="2">Task</th>
+                                    <th scope="col" colspan="1">Date</th>
+                                    <th scope="col" colspan="1">Options</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 {% for task in tasks %}
                                     <tr>
-                                        <th scope="row">{{ task.id }}</th>
-                                        <td>{{ task.content }}</td>
-                                        <td>{{ task.date_created }}</td>
-                                        <td>
+                                        <th scope="row" colspan="1">{{ task.id }}</th>
+                                        <td class="td-content" colspan="2">{{ task.content }}</td>
+                                        <td colspan="1">{{ task.date_created }}</td>
+                                        <td colspan="1">
                                             <a href="/delete/{{ task.id }}" style="display: inline-block">
                                                 <button class="btn btn-danger">
                                                     Delete
@@ -74,15 +86,21 @@
         </div>
     </section>
 
+    <script>
+        var close = document.getElementsByClassName("closeButton");
+        var i;
+
+        for (i = 0; i < close.length; i++) {
+            close[i].onclick = function () {
+                var div = this.parentElement;
+                div.style.opacity = "0";
+                setTimeout(function () {
+                    div.style.display = "none";
+                }, 600);
+            }
+        }
+    </script>
+
 {% endblock %}
 
 
-<!-- <div class="content">
-        <h1>Update Task</h1>
-
-        <form action="/update/{{ task.id }}" method="POST" class="task-form">
-            <input type="text" name="content" id="content" value="{{ task.content }}">
-            <input type="submit" value="Add Task">
-        </form>
-    </div>
--->

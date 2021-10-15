@@ -7,11 +7,19 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 db = SQLAlchemy(app)
 
 
+def get_time_now():
+    current_time = datetime.utcnow()
+    day = current_time.day
+    month = current_time.month
+    year = current_time.year
+    return f"{day}/{month}/{year}"
+
+
 class TodoDataBaseModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.String(100), nullable=False)
     status = db.Column(db.String, default='In progress')
-    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+    date_created = db.Column(db.String, default=get_time_now())
 
     def __repr__(self):
         return '<Task %r>' % self.id
@@ -19,20 +27,29 @@ class TodoDataBaseModel(db.Model):
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
+    show_alert = False
     if request.method == 'POST':
         task_content = request.form['content']
-        new_task = TodoDataBaseModel(content=task_content)
 
-        try:
-            db.session.add(new_task)
-            db.session.commit()
-            return redirect('/')
-        except:
-            return 'An error occurred :('
+        if len(task_content.strip()) == 0:
+            show_alert = True
+
+            tasks = TodoDataBaseModel.query.order_by(TodoDataBaseModel.id).all()
+            return render_template("index.html", alert=show_alert, tasks=tasks)
+
+        else:
+            new_task = TodoDataBaseModel(content=task_content)
+
+            try:
+                db.session.add(new_task)
+                db.session.commit()
+                return redirect('/')
+            except:
+                return 'An error occurred :('
 
     else:
         tasks = TodoDataBaseModel.query.order_by(TodoDataBaseModel.id).all()
-        return render_template("index.html", tasks=tasks)
+        return render_template("index.html", alert=show_alert, tasks=tasks)
 
 
 @app.route('/delete/<int:id>')
@@ -66,3 +83,7 @@ def update(id):
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+# TODO: Make a warning when you enter a task, which is already in the task list
+# TODO: Make a cancel button on the update.html page
+# TODO: Change Update to Edit
